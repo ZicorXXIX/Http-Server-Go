@@ -29,8 +29,6 @@ func main() {
 	// route := parseRoute(conn)
 	headers := parseHeaders(conn)
 	route := strings.Split(headers[0], " ")[1]
-	userAgent := headers[2]
-	fmt.Println(headers[2])
 	// userAgent := parseHeaders(conn)
 	
 	if route == "/" {
@@ -43,7 +41,9 @@ func main() {
 		} else if route == "/user-agent" {
 			// parseUserAgent(conn)
 			// fmt.Println(userAgent)
-			sendResponse(conn, "HTTP/1.1 404 Not Found\r\n\r\n"+userAgent )
+			userAgent := headers[2]
+			response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length:%d\r\n\r\n%s", len(userAgent), userAgent)
+			sendResponse(conn, response) 
 		} else {
 			sendResponse(conn, "HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")
 			
