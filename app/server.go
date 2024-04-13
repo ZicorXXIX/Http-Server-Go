@@ -31,7 +31,7 @@ func main() {
 	if route == "/" {
 		sendResponse(conn, "HTTP/1.1 200 OK\r\n\r\nHello, World!")
 		} else if strings.Contains(route, "/echo"){
-			responseBody := strings.Split(route, "/echo")[1]
+			responseBody := strings.Split(route, "echo/")[1]
 			fmt.Println(responseBody)
 			response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length:%d\r\n\r\n%s", len(responseBody), responseBody)
 			sendResponse(conn, response)
