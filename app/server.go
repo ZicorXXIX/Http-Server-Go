@@ -26,13 +26,15 @@ func main() {
 		os.Exit(1)
 	}
 	
-	buf := make([]byte, 1024)
-	_, err = conn.Read(buf)
-	statusHeader := strings.Split(string(buf),"\r\n")[0]
-	route := strings.Split(statusHeader, " ")[1]
+	route := parseRoute(conn)
 	
 	if route == "/" {
 		sendResponse(conn, "HTTP/1.1 200 OK\r\n\r\nHello, World!")
+		} else if strings.Contains(route, "/echo"){
+			responseBody := strings.Split(route, "/")[2]
+			fmt.Println(responseBody)
+			response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length:%d\r\n\r\n%s", len(responseBody), responseBody)
+			sendResponse(conn, response)
 		} else {
 			sendResponse(conn, "HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")
 			
@@ -48,4 +50,15 @@ func sendResponse(conn net.Conn, response string) {
 	if err != nil {
 		fmt.Println("Error writing response: ", err.Error())
 	}
+}
+
+func parseRoute(conn net.Conn) string {
+	buf := make([]byte, 1024)
+	_, err := conn.Read(buf)
+	if err != nil {
+		fmt.Println("Error reading request: ", err.Error())
+	}
+	statusHeader := strings.Split(string(buf),"\r\n")[0]
+	route := strings.Split(statusHeader, " ")[1]
+	return route		
 }
