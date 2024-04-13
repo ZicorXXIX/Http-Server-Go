@@ -27,6 +27,6 @@ func main() {
 	buf := make([]byte, 1024)
 	_, err = conn.Read(buf)
 
-	response = "HTTP/1.1 200 OK\r\n\r\n"
+	response := "HTTP/1.1 200 OK\r\n\r\n"
 	_, err = conn.Write([]byte(response))
 }
