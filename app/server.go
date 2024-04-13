@@ -18,9 +18,15 @@ func main() {
 		os.Exit(1)
 	}
 	//
-	_, err = l.Accept()
+	conn, err = l.Accept()
 	if err != nil {
 		fmt.Println("Error accepting connection: ", err.Error())
 		os.Exit(1)
 	}
+
+	buf := make([]byte, 1024)
+	_, err = conn.Read(buf)
+
+	response = "HTTP/1.1 200 OK\r\n\r\n"
+	_, err = conn.Write([]byte(response))
 }
