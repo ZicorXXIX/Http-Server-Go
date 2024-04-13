@@ -41,7 +41,7 @@ func main() {
 		} else if route == "/user-agent" {
 			// parseUserAgent(conn)
 			// fmt.Println(userAgent)
-			userAgent := headers[2]
+			userAgent := strings.Split(headers[2], " ")[1] 
 			response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length:%d\r\n\r\n%s", len(userAgent), userAgent)
 			sendResponse(conn, response) 
 		} else {
