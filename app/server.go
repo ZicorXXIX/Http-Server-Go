@@ -10,7 +10,7 @@ import (
 func main() {
 	// You can use print statements as follows for debugging, they'll be visible when running tests.
 	fmt.Println("Logs from your program will appear here!")
-	fmt.Printf("%q\n", strings.Split("a,b,c", ","))
+	
 
 	// Uncomment this block to pass the first stage
 	//
@@ -26,7 +26,12 @@ func main() {
 		os.Exit(1)
 	}
 	
-	route := parseRoute(conn)
+	// route := parseRoute(conn)
+	headers := parseHeaders(conn)
+	route := strings.Split(headers[0], " ")[1]
+	userAgent := headers[2]
+	fmt.Println(headers[2])
+	// userAgent := parseHeaders(conn)
 	
 	if route == "/" {
 		sendResponse(conn, "HTTP/1.1 200 OK\r\n\r\nHello, World!")
@@ -35,6 +40,10 @@ func main() {
 			fmt.Println(responseBody)
 			response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length:%d\r\n\r\n%s", len(responseBody), responseBody)
 			sendResponse(conn, response)
+		} else if route == "/user-agent" {
+			// parseUserAgent(conn)
+			// fmt.Println(userAgent)
+			sendResponse(conn, "HTTP/1.1 404 Not Found\r\n\r\n"+userAgent )
 		} else {
 			sendResponse(conn, "HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")
 			
@@ -52,13 +61,23 @@ func sendResponse(conn net.Conn, response string) {
 	}
 }
 
-func parseRoute(conn net.Conn) string {
+// func parseRoute(conn net.Conn) string {
+// 	buf := make([]byte, 1024)
+// 	_, err := conn.Read(buf)
+// 	if err != nil {
+// 		fmt.Println("Error reading request: ", err.Error())
+// 	}
+// 	statusHeader := strings.Split(string(buf),"\r\n")[0]
+// 	route := strings.Split(statusHeader, " ")[1]
+// 	return route		
+// }
+
+func parseHeaders(conn net.Conn) []string {
 	buf := make([]byte, 1024)
 	_, err := conn.Read(buf)
 	if err != nil {
 		fmt.Println("Error reading request: ", err.Error())
 	}
-	statusHeader := strings.Split(string(buf),"\r\n")[0]
-	route := strings.Split(statusHeader, " ")[1]
-	return route		
+	statusHeader := strings.Split(string(buf),"\r\n")
+	return statusHeader
 }
