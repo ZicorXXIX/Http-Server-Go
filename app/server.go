@@ -20,12 +20,22 @@ func main() {
 		os.Exit(1)
 	}
 	//
-	conn, err := l.Accept()
-	if err != nil {
-		fmt.Println("Error accepting connection: ", err.Error())
-		os.Exit(1)
+	for{
+		conn, err := l.Accept()
+		if err != nil {
+			fmt.Println("Error accepting connection: ", err.Error())
+			os.Exit(1)
+		}
+		go handleConnection(conn)
 	}
 	
+	
+	// response := "HTTP/1.1 200 OK\r\n\r\n"
+	// _, err = conn.Write([]byte(response))
+	
+}
+
+func handleConnection(conn net.Conn) {
 	// route := parseRoute(conn)
 	headers := parseHeaders(conn)
 	route := strings.Split(headers[0], " ")[1]
@@ -48,9 +58,6 @@ func main() {
 			sendResponse(conn, "HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")
 			
 	}
-	// response := "HTTP/1.1 200 OK\r\n\r\n"
-	// _, err = conn.Write([]byte(response))
-	
 }
 
 
