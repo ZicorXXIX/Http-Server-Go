@@ -47,7 +47,7 @@ func handleConnection(conn net.Conn) {
 		} else if strings.Contains(route, "/echo"){
 			responseBody := strings.Split(route, "echo/")[1]
 			fmt.Println(responseBody)
-			response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length:%d\r\n\r\n%s", len(responseBody), responseBody)
+			// response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length:%d\r\n\r\n%s", len(responseBody), responseBody)
 			sendResponse(conn, "HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")
 		} else if route == "/user-agent" {
 			// parseUserAgent(conn)
