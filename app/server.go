@@ -8,12 +8,9 @@ import (
 )
 
 func main() {
-	// You can use print statements as follows for debugging, they'll be visible when running tests.
-	fmt.Println("Logs from your program will appear here!")
-	
 
-	// Uncomment this block to pass the first stage
-	//
+	// fmt.Println("System Args:", os.Args[1])
+	
 	l, err := net.Listen("tcp", "0.0.0.0:4221")
 	if err != nil {
 		fmt.Println("Failed to bind to port 4221")
@@ -54,6 +51,17 @@ func handleConnection(conn net.Conn) {
 			userAgent := strings.Split(headers[2], " ")[1] 
 			response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length:%d\r\n\r\n%s", len(userAgent), userAgent)
 			sendResponse(conn, response) 
+		} else if strings.Contains(route, "/files"){
+			fileName := strings.Split(route, "files/")[1]
+			filepath := os.Args[1] + fileName
+			f, err := os.ReadFile(filepath)
+			if err != nil {
+				fmt.Println("Failed to ReadFile")
+				sendResponse(conn, "HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")							
+			}
+
+			response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length:%d\r\n\r\n%s", len(string(f)), string(f))
+			sendResponse(conn, response)
 		} else {
 			sendResponse(conn, "HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")
 			
