@@ -4,100 +4,104 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"path/filepath"
 	"strings"
+	"time"
 )
 
-const NEWLINE string = "\r\n"
-
 func main() {
-	// You can use print statements as follows for debugging, they'll be visible when running tests.
-	fmt.Println("Logs from your program will appear here!")
-	args := os.Args
-	fmt.Println(args)
-	directory := "" // leave empty if not supplied with "--directory" argument
-	if len(args) >= 3 && args[1] == "--directory" {
-		directory = args[2]
-		files, _err := os.ReadDir(directory)
-		if _err != nil {
-			fmt.Println("Files in directory" + directory)
-			for _, f := range files {
-				fmt.Println(f.Name())
-			}
-		}
-	}
-	fmt.Printf("directory = \"%s\"\n", directory)
+
+	// fmt.Println("System Args:", os.Args[1])
+	
 	l, err := net.Listen("tcp", "0.0.0.0:4221")
 	if err != nil {
 		fmt.Println("Failed to bind to port 4221")
 		os.Exit(1)
 	}
-	defer l.Close()
-	for {
+	//
+	for{
 		conn, err := l.Accept()
 		if err != nil {
-			break
+			fmt.Println("Error accepting connection: ", err.Error())
+			os.Exit(1)
 		}
-		go handleConnection(conn, directory)
+		go handleConnection(conn)
 	}
+	
+	
+	// response := "HTTP/1.1 200 OK\r\n\r\n"
+	// _, err = conn.Write([]byte(response))
+	
 }
 
-func handleConnection(conn net.Conn, directory string) error {
-	tcpConn, ok := conn.(*net.TCPConn)
-	if !ok {
-		return fmt.Errorf("expected a TCP connection, but failed to convert it")
-	}
-	input := make([]byte, 1024)
-	length, err := conn.Read(input)
-	if err != nil {
-		return err
-	}
-	input = input[:length]
-	request, err := parseRequest(input)
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		return err
-	}
-	response := handleRequest(request, directory)
-	tcpConn.Write(response.Bytes())
-	tcpConn.CloseWrite()
-	return nil
-}
+func handleConnection(conn net.Conn) {
+	conn.SetReadDeadline(time.Now().Add(1000 * time.Second))
+	conn.SetWriteDeadline(time.Now().Add(1000 * time.Second))
+	// conn.SetReadDeadline(time.Now().Add(100 * time.Second))
+	// route := parseRoute(conn)
+	headers := parseHeaders(conn)
+	route := strings.Split(headers[0], " ")[1]
+	// userAgent := parseHeaders(conn)
+	
+	if route == "/" {
+		sendResponse(conn, "HTTP/1.1 200 OK\r\n\r\nHello, World!")
+		} else if strings.Contains(route, "/echo"){
+			responseBody := strings.Split(route, "echo/")[1]
+			fmt.Println(responseBody)
+			response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length:%d\r\n\r\n%s", len(responseBody), responseBody)
+			sendResponse(conn, response)
+		} else if route == "/user-agent" {
+			// parseUserAgent(conn)
+			// fmt.Println(userAgent)
+			userAgent := strings.Split(headers[2], " ")[1] 
+			response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length:%d\r\n\r\n%s", len(userAgent), userAgent)
+			sendResponse(conn, response) 
+		} else if strings.Contains(route, "/files"){
+			fileName := strings.Split(route, "/files/")[1]
+			filepath := os.Args[2] + fileName
+			fmt.Println("FILE PATH:",filepath)
+			f, err := os.ReadFile(filepath)
+			fmt.Println("FILE CONTENTS:",string(f))
+			if err != nil {
+				sendResponse(conn, "HTTP/1.1 404 Not Found\r\n\r\n")						
+			} else {
+				data := string(f)
+				response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length:%d\r\n\r\n%s", len(f), data)
+				sendResponse(conn, response)
+			}
 
-func handleRequest(request *Request, directory string) Response {
-	headers := map[string]string{}
-	headers["Content-Type"] = "text/plain"
-	response := Response{
-		Version:       request.Version,
-		StatusCode:    200,
-		StatusMessage: "OK",
-		Headers:       headers,
-		Body:          []byte(""),
-	}
-	pathFields := strings.Split(request.Path[1:], "/") // omit first /
-	switch {
-	case request.Path == "/":
-		// pass
-	case request.Path == "/user-agent":
-		response.Body = []byte(request.Headers["User-Agent"])
-	case len(pathFields) >= 2 && pathFields[0] == "echo":
-		response.Body = []byte(strings.Join(pathFields[1:], "/"))
-	case len(pathFields) >= 2 && pathFields[0] == "files":
-		fullPath := filepath.Join(append([]string{directory}, pathFields[1:]...)...)
-		fmt.Printf("Trying to find %s\n", fullPath)
-		content, err := os.ReadFile(fullPath)
-		if err == nil {
-			response.Body = content
-			response.Headers["Content-Type"] = "application/octet-stream"
+			
 		} else {
-			response.StatusCode = 404
-			response.StatusMessage = "Not Found"
-		}
-	default:
-		response.StatusCode = 404
-		response.StatusMessage = "Not Found"
+			sendResponse(conn, "HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")
+			
 	}
-	headers["Content-Length"] = fmt.Sprintf("%d", len(response.Body))
-	fmt.Println(len(response.Bytes()), string(response.Bytes()))
-	return response
+}
+
+
+func sendResponse(conn net.Conn, response string) {
+	_, err := conn.Write([]byte(response))
+	if err != nil {
+		fmt.Println("Error writing response: ", err.Error())
+		conn.Close()
+	}
+}
+
+// func parseRoute(conn net.Conn) string {
+// 	buf := make([]byte, 1024)
+// 	_, err := conn.Read(buf)
+// 	if err != nil {
+// 		fmt.Println("Error reading request: ", err.Error())
+// 	}
+// 	statusHeader := strings.Split(string(buf),"\r\n")[0]
+// 	route := strings.Split(statusHeader, " ")[1]
+// 	return route		
+// }
+
+func parseHeaders(conn net.Conn) []string {
+	buf := make([]byte, 1024)
+	_, err := conn.Read(buf)
+	if err != nil {
+		fmt.Println("Error reading request: ", err.Error())
+	}
+	statusHeader := strings.Split(string(buf),"\r\n")
+	return statusHeader
 }
