@@ -44,7 +44,7 @@ for {
 				conn.Write(returnedBytes)
 			}
 			resp := fmt.Sprintf("HTTP/1.1 %d %s\r\nContent-Type: application/octet-stream\r\nContent-Length: %d\r\n\r\n%s\r\n", 200, "OK", len(dat), string(dat))
-1
+
 			conn.Write([]byte(resp))
 		} else if strings.Split(reqPath, "/")[1] == "user-agent" {
 			lines := strings.Split(string(reply), "\r\n")
