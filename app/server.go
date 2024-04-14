@@ -1,8 +1,11 @@
-("fmt"
-"net"
-"os"
-"path/filepath"
-"strings"
+package main
+
+import (
+	"fmt"
+	"net"
+	"os"
+	"path/filepath"
+	"strings"
 )
 func main() {
 fmt.Println("Logs from your program will appear here!")
