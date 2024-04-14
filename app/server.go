@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -33,6 +34,7 @@ func main() {
 }
 
 func handleConnection(conn net.Conn) {
+	conn.SetReadDeadline(time.Now().Add(100 * time.Second))
 	// conn.SetReadDeadline(time.Now().Add(100 * time.Second))
 	// route := parseRoute(conn)
 	headers := parseHeaders(conn)
