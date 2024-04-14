@@ -73,7 +73,6 @@ func handleConnection(conn net.Conn) {
 					conn.Write(returnedBytes)
 				}
 				resp := fmt.Sprintf("HTTP/1.1 %d %s\r\nContent-Type: application/octet-stream\r\nContent-Length: %d\r\n\r\n%s\r\n", 200, "OK", len(dat), string(dat))
-1
 				conn.Write([]byte(resp))
 
 			
