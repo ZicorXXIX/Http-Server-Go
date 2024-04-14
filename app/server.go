@@ -52,7 +52,7 @@ func handleConnection(conn net.Conn) {
 			response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length:%d\r\n\r\n%s", len(userAgent), userAgent)
 			sendResponse(conn, response) 
 		} else if strings.Contains(route, "/files"){
-			fileName := strings.Split(route, "files/")[1]
+			fileName := strings.Split(route, "/files/")[1]
 			filepath := os.Args[2] + fileName
 			fmt.Println("FILE PATH:",filepath)
 			f, err := os.ReadFile(filepath)
@@ -61,7 +61,7 @@ func handleConnection(conn net.Conn) {
 				fmt.Println("Failed to ReadFile")
 				sendResponse(conn, "HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")							
 			} else {
-				response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length:%d\r\n\r\n%s", len(string(f)), string(f))
+				response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length:%d\r\n\r\n%s", len(f), string(f))
 				sendResponse(conn, response)
 			}
 
