@@ -53,7 +53,8 @@ func handleConnection(conn net.Conn) {
 			sendResponse(conn, response) 
 		} else if strings.Contains(route, "/files"){
 			fileName := strings.Split(route, "files/")[1]
-			filepath := os.Args[1] + fileName
+			filepath := os.Args[2] + fileName
+			fmt.Println("FILE PATH:",filepath)
 			f, err := os.ReadFile(filepath)
 			if err != nil {
 				fmt.Println("Failed to ReadFile")
