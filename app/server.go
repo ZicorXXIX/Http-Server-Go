@@ -34,7 +34,7 @@ func main() {
 }
 
 func handleConnection(conn net.Conn) {
-	conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+	conn.SetReadDeadline(time.Now().Add(100 * time.Second))
 	// route := parseRoute(conn)
 	headers := parseHeaders(conn)
 	route := strings.Split(headers[0], " ")[1]
