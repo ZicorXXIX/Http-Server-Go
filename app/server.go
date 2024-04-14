@@ -58,7 +58,7 @@ func handleConnection(conn net.Conn) {
 			f, err := os.ReadFile(filepath)
 			fmt.Println("FILE CONTENTS:",string(f))
 			if err != nil {
-				sendResponse(conn, "HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")							
+				sendResponse(conn, "HTTP/1.1 404 Not Found\r\n\r\n")							
 			} else {
 				response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length:%d\r\n\r\n%s", len(f), string(f))
 				sendResponse(conn, response)
