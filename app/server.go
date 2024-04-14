@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -52,17 +53,28 @@ func handleConnection(conn net.Conn) {
 			response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length:%d\r\n\r\n%s", len(userAgent), userAgent)
 			sendResponse(conn, response) 
 		} else if strings.Contains(route, "/files"){
-			fileName := strings.Split(route, "/files/")[1]
-			filepath := os.Args[2] + fileName
-			fmt.Println("FILE PATH:",filepath)
-			f, err := os.ReadFile(filepath)
-			fmt.Println("FILE CONTENTS:",string(f))
-			if err != nil {
-				sendResponse(conn, "HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")						
-			} else {
-				response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length:%d\r\n\r\n%s", len(f), string(f))
-				sendResponse(conn, response)
-			}
+			// fileName := strings.Split(route, "/files/")[1]
+			// filepath := os.Args[2] + fileName
+			// fmt.Println("FILE PATH:",filepath)
+			// f, err := os.ReadFile(filepath)
+			// fmt.Println("FILE CONTENTS:",string(f))
+			// if err != nil {
+			// 	sendResponse(conn, "HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")						
+			// } else {
+			// 	response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length:%d\r\n\r\n%s", len(f), string(f))
+			// 	sendResponse(conn, response)
+			// }
+			value := strings.Split(route, "/files/")[1]
+				directory := os.Args[2]
+				dat, err := os.ReadFile(filepath.Join(directory, value))
+				fmt.Println(filepath.Join(directory, value), err)
+				if err != nil {
+					returnedBytes := []byte("HTTP/1.1 404 Not Found\r\n\r\n")
+					conn.Write(returnedBytes)
+				}
+				resp := fmt.Sprintf("HTTP/1.1 %d %s\r\nContent-Type: application/octet-stream\r\nContent-Length: %d\r\n\r\n%s\r\n", 200, "OK", len(dat), string(dat))
+1
+				conn.Write([]byte(resp))
 
 			
 		} else {
