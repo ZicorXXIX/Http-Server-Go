@@ -56,6 +56,7 @@ func handleConnection(conn net.Conn) {
 			filepath := os.Args[2] + fileName
 			fmt.Println("FILE PATH:",filepath)
 			f, err := os.ReadFile(filepath)
+			fmt.Println("FILE CONTENTS:",string(f))
 			if err != nil {
 				fmt.Println("Failed to ReadFile")
 				sendResponse(conn, "HTTP/1.1 404 Not Found\r\n\r\n404 Not Found")							
