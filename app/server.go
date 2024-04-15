@@ -68,7 +68,8 @@ func handleConnection(conn net.Conn) {
 				}
 				defer f.Close()
 				fmt.Println(headers[len(headers)-1])
-				req, err := f.WriteString(headers[len(headers)-1])
+				body := strings.Trim(headers[len(headers)-1], "\x00/")
+				req, err := f.WriteString(body)
 				if err != nil{
 					fmt.Println(err)
 					return
