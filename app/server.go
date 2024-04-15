@@ -40,6 +40,8 @@ func handleConnection(conn net.Conn) {
 	// route := parseRoute(conn)
 	headers := parseHeaders(conn)
 	route := strings.Split(headers[0], " ")[1]
+	method := strings.Split(headers[0], " ")[0]
+	// fmt.Println(headers[len(headers)-1]) //POSTED CONTENT
 	// userAgent := parseHeaders(conn)
 	
 	if route == "/" {
@@ -56,6 +58,25 @@ func handleConnection(conn net.Conn) {
 			response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length:%d\r\n\r\n%s", len(userAgent), userAgent)
 			sendResponse(conn, response) 
 		} else if strings.Contains(route, "/files"){
+			if method == "POST" {
+				fileName := strings.Split(route, "/files/")[1]
+				filepath := os.Args[2] + fileName
+				f, err := os.Create(filepath)
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+				defer f.Close()
+				req, err := f.WriteString(headers[len(headers)-1])
+				if err != nil{
+					fmt.Println(err)
+					return
+				}
+				fmt.Printf("Wrote %d bytes", req)
+				sendResponse(conn, "HTTP/1.1 201 Created\r\n\r\n")
+				return
+				
+			}
 			fileName := strings.Split(route, "/files/")[1]
 			filepath := os.Args[2] + fileName
 			fmt.Println("FILE PATH:",filepath)
